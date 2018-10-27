@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import * as express from 'express';
 import * as Argv from 'yargs'
 import Path from 'path';

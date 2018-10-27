@@ -1,6 +1,6 @@
 {
   "name": "hserve",
-  "version": "0.0.1-beta2",
+  "version": "0.0.1-beta3",
   "main": "index.js",
   "license": "MIT",
   "repository": "git@github.com:bagaking/handyServer.git",
