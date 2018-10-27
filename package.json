@@ -1,8 +1,9 @@
 {
   "name": "hserve",
-  "version": "0.0.1-beta1",
+  "version": "0.0.1-beta2",
   "main": "index.js",
   "license": "MIT",
+  "repository": "git@github.com:bagaking/handyServer.git",
   "description": "easy http server",
   "author": "kinghand(kinghand@foxmail.com)",
   "scripts": {
@@ -10,7 +11,7 @@
     "serve": "node ./build/app/server.js"
   },
   "bin": {
-    "khserve": "build/app/server.js"
+    "hserve": "build/app/server.js"
   },
   "dependencies": {
     "@types/es6-shim": "^0.31.37",

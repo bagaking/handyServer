@@ -1,5 +1,3 @@
-'using strict'
-
 import * as express from 'express';
 import * as Argv from 'yargs'
 import Path from 'path';

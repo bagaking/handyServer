@@ -2,7 +2,7 @@
 
 ## install
 
-`npm i -g khserve`
+`npm i -g hserve`
 
 ## usage
 
