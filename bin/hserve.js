@@ -41,7 +41,7 @@ var path = argv.dir ? (path_1.default.isAbsolute(argv.dir)
     ? argv.dir
     : path_1.default.join(process.cwd(), argv.dir))
     : process.cwd();
-app.use(express.static(path));
+app.use("/", express.static(path));
 app.listen(port, function () {
     console.log("\n**** Server Start ****\nServe path : " + path + " \nListening at : http://localhost:" + port + "/\n**********************\n");
 });

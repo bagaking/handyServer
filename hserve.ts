@@ -35,7 +35,7 @@ const path: string =
         : Path.join(process.cwd(), argv.dir))
         : process.cwd();
 
-app.use(express.static(path));
+app.use("/", express.static(path));
 app.listen(port, () => {
     console.log(
         `
