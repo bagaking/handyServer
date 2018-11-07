@@ -45,8 +45,11 @@ var argv = Argv
     type: 'boolean'
 })
     .usage('Usage: hserve PATH [OPTIONS]')
-    .example('hserve /var/www/my_blog', 'serve the folder "my_blog" at port 3000.')
-    .example('hserve /var/www -d my_blog -p 80', 'serve the folder "my_blog" at port 80.')
+    .example('hserve', 'serve current-folder, at the port 3000.')
+    .example('hserve ..', 'serve parent-folder, at the port 3000.')
+    .example('hserve /var/www/html -l', 'serve the folder "/var/www/html" with logs, at the port 3000.')
+    .example('hserve /var/www -d my_blog -p 80', 'serve the folder "/var/www/my_blog", at the port 80.')
+    .example('hserve /var/www -m mock', 'serve the folder "/var/www/" and mock the folder "/var/www/mock", at the 3000.')
     .help('h').alias("h", "help")
     .epilog('Copyright 2018')
     .argv;
@@ -64,17 +67,27 @@ var mockPath;
 var mockFiles;
 if (!!argv.mock) {
     mockPath = path_1.default.join(rootPath, argv.mock);
-    var files = fs_1.default
-        .readdirSync(mockPath)
-        .filter(function (file) { return !file.match(/\..*\.swp/); });
     mockFiles = new Map();
-    files.forEach(function (file) {
-        var filename = path_1.default.parse(file).name;
-        mockFiles.set(filename, require(path_1.default.join(mockPath, file)));
-        app.get("/api/" + filename + "/", function (req, res) {
-            res.send(JSON.stringify(mockFiles.get(filename)));
-        });
-    });
+    var mockFile_1 = function (path, routeParent) {
+        if (routeParent === void 0) { routeParent = ''; }
+        console.log("load", path);
+        var fstat = fs_1.default.lstatSync(path);
+        var filename = path_1.default.parse(path).name;
+        var route = (routeParent) ? path_1.default.join(routeParent, filename) : "/api";
+        if (fstat.isDirectory()) {
+            console.log("dir", path);
+            var files = fs_1.default.readdirSync(path).filter(function (file) { return !file.match(/\..*\.swp/); });
+            files.forEach(function (file) { return mockFile_1(path_1.default.join(path, file), route); });
+        }
+        else if (fstat.isFile()) {
+            console.log("file", path);
+            mockFiles.set(route, path);
+            app.get(route, function (req, res) {
+                res.send(JSON.stringify(require(mockFiles.get(route))));
+            });
+        }
+    };
+    mockFile_1(mockPath);
 }
 app.listen(port, function () {
     console.log('**** Service Preparing ****\n');
@@ -86,7 +99,7 @@ app.listen(port, function () {
     else {
         console.log("\n- Mock :\n    - path : " + mockPath + "\n    - at : http://localhost:" + port + "/api/\n    - api :");
         mockFiles.forEach(function (_, i) {
-            console.log("       - /api/" + i + "/");
+            console.log("       - " + i);
         });
         console.log('');
     }

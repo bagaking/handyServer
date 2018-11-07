@@ -35,8 +35,11 @@ const argv = Argv
         type: 'boolean'
     })
     .usage('Usage: hserve PATH [OPTIONS]')
-    .example('hserve /var/www/my_blog', 'serve the folder "my_blog" at port 3000.')
-    .example('hserve /var/www -d my_blog -p 80', 'serve the folder "my_blog" at port 80.')
+    .example('hserve', 'serve current-folder, at the port 3000.')
+    .example('hserve ..', 'serve parent-folder, at the port 3000.')
+    .example('hserve /var/www/html -l', 'serve the folder "/var/www/html" with logs, at the port 3000.')
+    .example('hserve /var/www -d my_blog -p 80', 'serve the folder "/var/www/my_blog", at the port 80.')
+    .example('hserve /var/www -m mock', 'serve the folder "/var/www/" and mock the folder "/var/www/mock", at the 3000.')
     .help('h').alias("h", "help")
     .epilog('Copyright 2018')
     .argv;
@@ -61,17 +64,30 @@ let mockPath : string;
 let mockFiles : Map<string, any>;
 if(!!argv.mock){
     mockPath = Path.join(rootPath, argv.mock);
-    const files = fs
-        .readdirSync(mockPath)
-        .filter(file => !file.match(/\..*\.swp/));
     mockFiles = new Map<string, any>();
-    files.forEach(file => {
-        let filename :string = Path.parse(file).name;
-        mockFiles.set(filename, require(Path.join(mockPath,file)));
-        app.get(`/api/${filename}/`, function (req, res) {
-            res.send(JSON.stringify(mockFiles.get(filename)));
-        });
-    })
+
+    const mockFile = (path: string, routeParent : string = '') => {
+
+        console.log("load", path);
+
+        let fstat = fs.lstatSync(path);
+        let filename :string = Path.parse(path).name;
+        let route = (routeParent) ? Path.join(routeParent, filename) : "/api";
+
+        if(fstat.isDirectory()){
+            console.log("dir", path);
+            const files = fs.readdirSync(path).filter(file => !file.match(/\..*\.swp/));
+            files.forEach(file => mockFile(Path.join(path, file), route));
+        }else if(fstat.isFile()){
+            console.log("file", path);
+            mockFiles.set(route, path);
+            app.get(route, function (req, res) {
+                res.send(JSON.stringify(require(mockFiles.get(route))));
+            });
+        }
+    }
+
+    mockFile(mockPath);
 }
 
 app.listen(port, () => {
@@ -92,7 +108,7 @@ app.listen(port, () => {
     - at : http://localhost:${port}/api/
     - api :`);
         mockFiles.forEach((_,i) =>{
-            console.log(`       - /api/${i}/`);
+            console.log(`       - ${i}`);
         })
         console.log('');
     }

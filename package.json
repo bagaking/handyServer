@@ -1,6 +1,6 @@
 {
   "name": "hserve",
-  "version": "0.0.1-beta5",
+  "version": "0.0.1-beta6",
   "main": "bin/hserve.js",
   "license": "MIT",
   "repository": "git@github.com:bagaking/handyServer.git",
