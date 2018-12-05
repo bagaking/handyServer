@@ -4,6 +4,7 @@ import * as express from 'express';
 import * as Argv from 'yargs'
 import Path from 'path';
 import fs from 'fs';
+import walk from 'walk';
 
 const argv = Argv
     .option('d', {
@@ -33,6 +34,12 @@ const argv = Argv
         default: false,
         describe: 'whether it should print log',
         type: 'boolean'
+    }).option('i', {
+        alias: 'index',
+        demand: false,
+        default: 'name',
+        describe: 'provide get api /--index-- to provide index of folder. \nAvailable modes : [off], [name], [detail]\n',
+        type: 'string'
     })
     .usage('Usage: hserve PATH [OPTIONS]')
     .example('hserve', 'serve current-folder, at the port 3000.')
@@ -44,7 +51,7 @@ const argv = Argv
     .epilog('Copyright 2018')
     .argv;
 
-const exp = require('express')
+const exp = require('express');
 
 const app: express.Application = exp();
 const port: number = argv.port;
@@ -59,6 +66,26 @@ if(argv.log) {
 }
 
 app.use("/", express.static(servePath));
+
+const indexMode : string = argv.index.toLowerCase();
+if(indexMode !== 'off') {
+    app.get("/--index--", function (req, res) {
+        let files: Array<string|object> = [];
+        let walker = walk.walk(servePath, {followLinks: false});
+        walker.on('file', function (root, stat, next) {
+            let route = root.replace(servePath, "");
+            let file = stat;
+            if(indexMode === "name") {
+                files.push(indexMode === "name" ? Path.join(route, file.name) : {route, file });
+            }
+            next();
+        });
+        walker.on('end', function () {
+            res.send(files);
+        });
+    })
+}
+
 
 let mockPath : string;
 let mockFiles : Map<string, any>;
@@ -100,7 +127,7 @@ app.listen(port, () => {
 `);
 
     if(!mockPath){
-        console.log('- Mock : off');
+        console.log('- Mock : off\n');
     }else{
         console.log(`
 - Mock :
@@ -115,6 +142,7 @@ app.listen(port, () => {
 
 
     console.log('- Log :', argv.log ? "on" : "off", '\n')
+    console.log('- index :', argv.index, '\n')
     console.log('**** Service Running ******\n');
 });
 

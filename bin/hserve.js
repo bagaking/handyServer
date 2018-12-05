@@ -15,6 +15,7 @@ var express = __importStar(require("express"));
 var Argv = __importStar(require("yargs"));
 var path_1 = __importDefault(require("path"));
 var fs_1 = __importDefault(require("fs"));
+var walk_1 = __importDefault(require("walk"));
 var argv = Argv
     .option('d', {
     alias: 'dir',
@@ -43,6 +44,12 @@ var argv = Argv
     default: false,
     describe: 'whether it should print log',
     type: 'boolean'
+}).option('i', {
+    alias: 'index',
+    demand: false,
+    default: 'name',
+    describe: 'provide get api /--index-- to provide index of folder. \nAvailable modes : [off], [name], [detail]\n',
+    type: 'string'
 })
     .usage('Usage: hserve PATH [OPTIONS]')
     .example('hserve', 'serve current-folder, at the port 3000.')
@@ -63,6 +70,24 @@ if (argv.log) {
     app.use(require('morgan')('short'));
 }
 app.use("/", express.static(servePath));
+var indexMode = argv.index.toLowerCase();
+if (indexMode !== 'off') {
+    app.get("/--index--", function (req, res) {
+        var files = [];
+        var walker = walk_1.default.walk(servePath, { followLinks: false });
+        walker.on('file', function (root, stat, next) {
+            var route = root.replace(servePath, "");
+            var file = stat;
+            if (indexMode === "name") {
+                files.push(indexMode === "name" ? path_1.default.join(route, file.name) : { route: route, file: file });
+            }
+            next();
+        });
+        walker.on('end', function () {
+            res.send(files);
+        });
+    });
+}
 var mockPath;
 var mockFiles;
 if (!!argv.mock) {
@@ -94,7 +119,7 @@ app.listen(port, function () {
     console.log("- Root path : " + rootPath);
     console.log("\n- Serve : \n    - path : " + servePath + " \n    - at : http://localhost:" + port + "/\n");
     if (!mockPath) {
-        console.log('- Mock : off');
+        console.log('- Mock : off\n');
     }
     else {
         console.log("\n- Mock :\n    - path : " + mockPath + "\n    - at : http://localhost:" + port + "/api/\n    - api :");
@@ -104,5 +129,6 @@ app.listen(port, function () {
         console.log('');
     }
     console.log('- Log :', argv.log ? "on" : "off", '\n');
+    console.log('- index :', argv.index, '\n');
     console.log('**** Service Running ******\n');
 });
