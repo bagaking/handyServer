@@ -6,6 +6,8 @@ import Path from 'path';
 import fs from 'fs';
 import walk from 'walk';
 
+import Collection from './Collection'
+
 const argv = Argv
     .option('d', {
         alias: 'dir',
@@ -34,11 +36,18 @@ const argv = Argv
         default: false,
         describe: 'whether it should print log',
         type: 'boolean'
-    }).option('i', {
+    })
+    .option('i', {
         alias: 'index',
         demand: false,
         default: 'name',
         describe: 'provide get api /--index-- to provide index of folder. \nAvailable modes : [off], [name], [detail]\n',
+        type: 'string'
+    }).option('c', {
+        alias: 'collect',
+        demand: false,
+        default: '',
+        describe: 'mongoDb connection string for collecting logs',
         type: 'string'
     })
     .usage('Usage: hserve PATH [OPTIONS]')
@@ -47,6 +56,7 @@ const argv = Argv
     .example('hserve /var/www/html -l', 'serve the folder "/var/www/html" with logs, at the port 3000.')
     .example('hserve /var/www -d my_blog -p 80', 'serve the folder "/var/www/my_blog", at the port 80.')
     .example('hserve /var/www -m mock', 'serve the folder "/var/www/" and mock the folder "/var/www/mock", at the 3000.')
+    .example('hserve -c mongodb://localhost/logs', 'create logging server based on mongodb.')
     .help('h').alias("h", "help")
     .epilog('Copyright 2018')
     .argv;
@@ -55,7 +65,7 @@ const exp = require('express');
 
 const app: express.Application = exp();
 const port: number = argv.port;
-const root : string = argv._[0];
+const root: string = argv._[0];
 
 const rootPath: string = root ? (Path.isAbsolute(root) ? root : Path.join(process.cwd(), root)) : process.cwd();
 const servePath = Path.join(rootPath, argv.dir);
@@ -117,14 +127,34 @@ if(!!argv.mock){
     mockFile(mockPath);
 }
 
+if(!!argv.collect && argv.collect !== ''){
+    let collection = new Collection(argv.collect);
+    app.get('/--collect--/add/:tag', function(req, res) {
+        let msg = decodeURIComponent(req.query.msg || '');
+        collection.add(req.params.tag, msg,req.query.level || 'log', function(e : any){
+            if(e) return res.status(500).end(e.stack);
+            res.status(201).end(`${req.params.tag} : ${req.query.msg} are collected.`);
+        })
+    });
+
+    app.get('/--collect--/get/:tag?', async function(req, res) {
+        let collections : any[] = await collection.get(req.params.tag, req.query.level, function(e:any){ res.status(500).end(e.stack); })
+        if (collections.length === 0){
+            res.status(201).end('empty');
+        }else{
+            collections.forEach(log => log.dateISOStr = log.date.toISOString())
+            res.status(201).end( JSON.stringify( { collections }));
+        }
+    });
+}
+
 app.listen(port, () => {
     console.log('**** Service Preparing ****\n');
     console.log(`- Root path : ${rootPath}`);
     console.log(`
 - Serve : 
     - path : ${servePath} 
-    - at : http://localhost:${port}/
-`);
+    - at : http://localhost:${port}/`);
 
     if(!mockPath){
         console.log('- Mock : off\n');
@@ -142,7 +172,19 @@ app.listen(port, () => {
 
 
     console.log('- Log :', argv.log ? "on" : "off", '\n')
-    console.log('- index :', argv.index, '\n')
+    console.log(
+`- index : ${argv.index} 
+    - at : http://localhost:${port}/--index--
+    `
+    )
+
+    console.log(
+`- collect : ${argv.collect ? 'on' : 'off'}
+    - mongo : ${argv.collect}
+    - add : http://localhost:${port}/--collect--/add/:tag?msg=&level=
+    - get : http://localhost:${port}/--collect--/get/:tag?level=
+    `)
+
     console.log('**** Service Running ******\n');
 });
 
