@@ -6,6 +6,8 @@ import Path from 'path';
 import fs from 'fs';
 import walk from 'walk';
 
+let pkg = require('./package.json');
+
 import Collection from './Collection'
 
 const argv = Argv
@@ -58,6 +60,7 @@ const argv = Argv
     .example('hserve /var/www -m mock', 'serve the folder "/var/www/" and mock the folder "/var/www/mock", at the 3000.')
     .example('hserve -c mongodb://localhost/logs', 'create logging server based on mongodb.')
     .help('h').alias("h", "help")
+    .version(pkg.version)
     .epilog('Copyright 2018')
     .argv;
 

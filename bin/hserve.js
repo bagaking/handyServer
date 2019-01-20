@@ -51,6 +51,7 @@ var Argv = __importStar(require("yargs"));
 var path_1 = __importDefault(require("path"));
 var fs_1 = __importDefault(require("fs"));
 var walk_1 = __importDefault(require("walk"));
+var pkg = require('./package.json');
 var Collection_1 = __importDefault(require("./Collection"));
 var argv = Argv
     .option('d', {
@@ -102,6 +103,7 @@ var argv = Argv
     .example('hserve /var/www -m mock', 'serve the folder "/var/www/" and mock the folder "/var/www/mock", at the 3000.')
     .example('hserve -c mongodb://localhost/logs', 'create logging server based on mongodb.')
     .help('h').alias("h", "help")
+    .version(pkg.version)
     .epilog('Copyright 2018')
     .argv;
 var exp = require('express');
