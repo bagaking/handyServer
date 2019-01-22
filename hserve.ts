@@ -6,9 +6,12 @@ import Path from 'path';
 import fs from 'fs';
 import walk from 'walk';
 
+import bodyParser from 'body-parser'
+
 let pkg = require('./package.json');
 
 import Collection from './Collection'
+
 
 const argv = Argv
     .option('d', {
@@ -64,7 +67,7 @@ const argv = Argv
     .epilog('Copyright 2018')
     .argv;
 
-const exp = require('express');
+import exp = require('express');
 
 const app: express.Application = exp();
 const port: number = argv.port;
@@ -73,10 +76,25 @@ const root: string = argv._[0];
 const rootPath: string = root ? (Path.isAbsolute(root) ? root : Path.join(process.cwd(), root)) : process.cwd();
 const servePath = Path.join(rootPath, argv.dir);
 
+app.use(bodyParser.urlencoded())
+app.use(bodyParser.json())
 
 if(argv.log) {
     app.use(require('morgan')('short'));
 }
+
+
+let requires : any = { _ALL_ : 0}
+app.use(function (req, res, next) {
+
+    if(!requires[req.originalUrl]) requires[req.originalUrl] = 1;
+    else requires[req.originalUrl] += 1;
+    requires._ALL_ += 1;
+    if(requires._ALL_ % 1 == 1000) console.log(requires, Date.now(), new Date()) // print state every 1000 entries
+
+    res.header('Access-Control-Allow-Origin', '*');
+    next();
+});
 
 app.use("/", express.static(servePath));
 
@@ -132,25 +150,25 @@ if(!!argv.mock){
 
 if(!!argv.collect && argv.collect !== ''){
     let collection = new Collection(argv.collect);
+
     app.get('/--collect--/add/:tag', function(req, res) {
         let msg = decodeURIComponent(req.query.msg || '');
         collection.add(req.params.tag, msg,req.query.level || 'log', function(e : any){
             if(e) return res.status(500).end(e.stack);
-            res.status(201).end(`${req.params.tag} : ${req.query.msg} are collected.`);
+            res.status(201).end(`${req.params.tag} : ${msg} are collected.`);
+        })
+    });
+
+    app.post('/--collect--/add/:tag', function(req, res) {
+        console.log(req.body)
+        let msg = decodeURIComponent(req.body.msg || '');
+        collection.add(req.params.tag, msg,req.body.level || 'log', function(e : any){
+            if(e) return res.status(500).end(e.stack);
+            res.status(201).end(`${req.params.tag} : ${msg} are collected.`);
         })
     });
 
     app.get('/--collect--/get/:tag?', async function(req, res) {
-        let collections : any = await collection.get(req.params.tag, req.query.level, function(e:any){ res.status(500).end(e.stack); })
-        if (collections.length === 0){
-            res.status(201).end('empty');
-        }else{
-            collections.forEach(function(c : any) { c.dateISOStr = c.date.toISOString(); })
-            res.status(201).end( JSON.stringify( { collections }));
-        }
-    });
-
-    app.get('/--collect--/get-all', async function(req, res) {
         let collections : any = await collection.get(req.params.tag, req.query.level, function(e:any){ res.status(500).end(e.stack); })
         if (collections.length === 0){
             res.status(201).end('empty');

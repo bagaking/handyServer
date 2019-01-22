@@ -51,6 +51,7 @@ var Argv = __importStar(require("yargs"));
 var path_1 = __importDefault(require("path"));
 var fs_1 = __importDefault(require("fs"));
 var walk_1 = __importDefault(require("walk"));
+var body_parser_1 = __importDefault(require("body-parser"));
 var pkg = require('./package.json');
 var Collection_1 = __importDefault(require("./Collection"));
 var argv = Argv
@@ -106,15 +107,29 @@ var argv = Argv
     .version(pkg.version)
     .epilog('Copyright 2018')
     .argv;
-var exp = require('express');
+var exp = require("express");
 var app = exp();
 var port = argv.port;
 var root = argv._[0];
 var rootPath = root ? (path_1.default.isAbsolute(root) ? root : path_1.default.join(process.cwd(), root)) : process.cwd();
 var servePath = path_1.default.join(rootPath, argv.dir);
+app.use(body_parser_1.default.urlencoded());
+app.use(body_parser_1.default.json());
 if (argv.log) {
     app.use(require('morgan')('short'));
 }
+var requires = { _ALL_: 0 };
+app.use(function (req, res, next) {
+    if (!requires[req.originalUrl])
+        requires[req.originalUrl] = 1;
+    else
+        requires[req.originalUrl] += 1;
+    requires._ALL_ += 1;
+    if (requires._ALL_ % 1 == 0)
+        console.log(requires, Date.now(), new Date());
+    res.header('Access-Control-Allow-Origin', '*');
+    next();
+});
 app.use("/", express.static(servePath));
 var indexMode = argv.index.toLowerCase();
 if (indexMode !== 'off') {
@@ -167,7 +182,16 @@ if (!!argv.collect && argv.collect !== '') {
         collection_1.add(req.params.tag, msg, req.query.level || 'log', function (e) {
             if (e)
                 return res.status(500).end(e.stack);
-            res.status(201).end(req.params.tag + " : " + req.query.msg + " are collected.");
+            res.status(201).end(req.params.tag + " : " + msg + " are collected.");
+        });
+    });
+    app.post('/--collect--/add/:tag', function (req, res) {
+        console.log(req.body);
+        var msg = decodeURIComponent(req.body.msg || '');
+        collection_1.add(req.params.tag, msg, req.body.level || 'log', function (e) {
+            if (e)
+                return res.status(500).end(e.stack);
+            res.status(201).end(req.params.tag + " : " + msg + " are collected.");
         });
     });
     app.get('/--collect--/get/:tag?', function (req, res) {
