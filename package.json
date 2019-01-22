@@ -1,6 +1,6 @@
 {
   "name": "hserve",
-  "version": "0.0.1-beta.13",
+  "version": "0.0.1-beta.14",
   "main": "bin/hserve.js",
   "license": "MIT",
   "repository": "git@github.com:bagaking/handyServer.git",
@@ -14,12 +14,14 @@
     "hserve": "bin/hserve.js"
   },
   "dependencies": {
+    "@types/cors": "^2.8.4",
     "@types/es6-shim": "^0.31.37",
     "@types/express": "^4.16.0",
     "@types/mongoose": "^5.3.8",
     "@types/morgan": "^1.7.35",
     "@types/walk": "^2.3.0",
     "@types/yargs": "^12.0.1",
+    "cors": "^2.8.5",
     "express": "^4.16.4",
     "mongoose": "^5.4.5",
     "morgan": "^1.9.1",

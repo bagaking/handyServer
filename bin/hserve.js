@@ -54,6 +54,7 @@ var walk_1 = __importDefault(require("walk"));
 var body_parser_1 = __importDefault(require("body-parser"));
 var pkg = require('./package.json');
 var Collection_1 = __importDefault(require("./Collection"));
+var cors_1 = __importDefault(require("cors"));
 var argv = Argv
     .option('d', {
     alias: 'dir',
@@ -118,6 +119,7 @@ app.use(body_parser_1.default.json());
 if (argv.log) {
     app.use(require('morgan')('short'));
 }
+app.use(cors_1.default());
 var requires = { _ALL_: 0 };
 app.use(function (req, res, next) {
     if (!requires[req.originalUrl])
@@ -127,7 +129,6 @@ app.use(function (req, res, next) {
     requires._ALL_ += 1;
     if (requires._ALL_ % 1000 == 1)
         console.log(requires, Date.now(), new Date()); // print state every 1000 entries
-    res.header('Access-Control-Allow-Origin', '*');
     next();
 });
 app.use("/", express.static(servePath));

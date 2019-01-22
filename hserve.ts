@@ -11,6 +11,7 @@ import bodyParser from 'body-parser'
 let pkg = require('./package.json');
 
 import Collection from './Collection'
+import cors from 'cors'
 
 
 const argv = Argv
@@ -83,6 +84,7 @@ if(argv.log) {
     app.use(require('morgan')('short'));
 }
 
+app.use(cors())
 
 let requires : any = { _ALL_ : 0}
 app.use(function (req, res, next) {
@@ -92,7 +94,6 @@ app.use(function (req, res, next) {
     requires._ALL_ += 1;
     if(requires._ALL_ % 1000 == 1) console.log(requires, Date.now(), new Date()) // print state every 1000 entries
 
-    res.header('Access-Control-Allow-Origin', '*');
     next();
 });
 
