@@ -90,7 +90,7 @@ app.use(function (req, res, next) {
     if(!requires[req.originalUrl]) requires[req.originalUrl] = 1;
     else requires[req.originalUrl] += 1;
     requires._ALL_ += 1;
-    if(requires._ALL_ % 1 == 1000) console.log(requires, Date.now(), new Date()) // print state every 1000 entries
+    if(requires._ALL_ % 1000 == 1) console.log(requires, Date.now(), new Date()) // print state every 1000 entries
 
     res.header('Access-Control-Allow-Origin', '*');
     next();

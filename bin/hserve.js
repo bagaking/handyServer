@@ -125,8 +125,8 @@ app.use(function (req, res, next) {
     else
         requires[req.originalUrl] += 1;
     requires._ALL_ += 1;
-    if (requires._ALL_ % 1 == 0)
-        console.log(requires, Date.now(), new Date());
+    if (requires._ALL_ % 1000 == 1)
+        console.log(requires, Date.now(), new Date()); // print state every 1000 entries
     res.header('Access-Control-Allow-Origin', '*');
     next();
 });
