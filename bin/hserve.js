@@ -182,7 +182,7 @@ if (!!argv.collect && argv.collect !== '') {
                             res.status(201).end('empty');
                         }
                         else {
-                            collections.forEach(function (log) { return log.dateISOStr = log.date.toISOString(); });
+                            collections.forEach(function (c) { c.dateISOStr = c.date.toISOString(); });
                             res.status(201).end(JSON.stringify({ collections: collections }));
                         }
                         return [2 /*return*/];

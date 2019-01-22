@@ -62,14 +62,16 @@ var Collection = /** @class */ (function () {
         if (msg === void 0) { msg = ""; }
         if (level === void 0) { level = 'log'; }
         if (cbMongo === void 0) { cbMongo = null; }
-        this.log.create({ tag: tag, msg: msg, level: level }, cbMongo);
+        var query = { tag: tag, msg: msg, level: level };
+        console.log("collection set", query);
+        this.log.create(query, cbMongo);
     };
     Collection.prototype.get = function (tag, level, cbError) {
         if (tag === void 0) { tag = ''; }
         if (level === void 0) { level = ''; }
         if (cbError === void 0) { cbError = null; }
         return __awaiter(this, void 0, void 0, function () {
-            var query;
+            var query, ret;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -80,8 +82,11 @@ var Collection = /** @class */ (function () {
                         if (level !== '') {
                             query.level = level;
                         }
-                        return [4 /*yield*/, this.log.find(query).sort({ date: 1 }).error(cbError)];
-                    case 1: return [2 /*return*/, _a.sent()];
+                        console.log("collection get", query);
+                        return [4 /*yield*/, this.log.find(query).sort({ date: 1 }).catch(cbError)];
+                    case 1:
+                        ret = _a.sent();
+                        return [2 /*return*/, ret];
                 }
             });
         });

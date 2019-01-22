@@ -141,11 +141,11 @@ if(!!argv.collect && argv.collect !== ''){
     });
 
     app.get('/--collect--/get/:tag?', async function(req, res) {
-        let collections : any[] = await collection.get(req.params.tag, req.query.level, function(e:any){ res.status(500).end(e.stack); })
+        let collections : any = await collection.get(req.params.tag, req.query.level, function(e:any){ res.status(500).end(e.stack); })
         if (collections.length === 0){
             res.status(201).end('empty');
         }else{
-            collections.forEach(log => log.dateISOStr = log.date.toISOString())
+            collections.forEach(function(c : any) { c.dateISOStr = c.date.toISOString(); })
             res.status(201).end( JSON.stringify( { collections }));
         }
     });

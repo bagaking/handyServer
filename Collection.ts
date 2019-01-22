@@ -23,7 +23,9 @@ export default class Collection {
     }
 
     public add(tag : string = "", msg : string = "", level : string = 'log', cbMongo : any = null) {
-        this.log.create({tag, msg, level}, cbMongo);
+        let query = {tag, msg, level};
+        console.log("collection set", query);
+        this.log.create(query, cbMongo);
     }
 
     public async get(tag : string = '', level : string = '', cbError: any = null) {
@@ -34,7 +36,9 @@ export default class Collection {
         if (level !== '') {
             query.level = level;
         }
-        return await this.log.find(query).sort({ date: 1 }).error(cbError);
+        console.log("collection get", query);
+        let ret = await this.log.find(query).sort({ date: 1 }).catch(cbError);
+        return ret;
     }
 
 }
