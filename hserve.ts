@@ -149,10 +149,21 @@ if(!!argv.collect && argv.collect !== ''){
             res.status(201).end( JSON.stringify( { collections }));
         }
     });
+
+    app.get('/--collect--/get-all', async function(req, res) {
+        let collections : any = await collection.get(req.params.tag, req.query.level, function(e:any){ res.status(500).end(e.stack); })
+        if (collections.length === 0){
+            res.status(201).end('empty');
+        }else{
+            collections.forEach(function(c : any) { c.dateISOStr = c.date.toISOString(); })
+            res.status(201).end( JSON.stringify( { collections }));
+        }
+    });
 }
 
 app.listen(port, () => {
-    console.log('**** Service Preparing ****\n');
+    console.log(`==== Service Preparing (ver:${pkg.version}) =====`);
+    console.log('==>\n');
     console.log(`- Root path : ${rootPath}`);
     console.log(`
 - Serve : 

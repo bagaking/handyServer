@@ -192,7 +192,8 @@ if (!!argv.collect && argv.collect !== '') {
     });
 }
 app.listen(port, function () {
-    console.log('**** Service Preparing ****\n');
+    console.log("==== Service Preparing (ver:" + pkg.version + ") =====");
+    console.log('==>\n');
     console.log("- Root path : " + rootPath);
     console.log("\n- Serve : \n    - path : " + servePath + " \n    - at : http://localhost:" + port + "/");
     if (!mockPath) {
