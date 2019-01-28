@@ -1,6 +1,6 @@
 {
   "name": "hserve",
-  "version": "0.0.1-beta.14",
+  "version": "0.0.1-beta.16",
   "main": "bin/hserve.js",
   "license": "MIT",
   "repository": "git@github.com:bagaking/handyServer.git",
@@ -8,6 +8,7 @@
   "author": "kinghand(kinghand@foxmail.com)",
   "scripts": {
     "tsc": "tsc && cp package.json ./bin/",
+    "build": "npm run tsc",
     "serve": "node ./bin/hserve.js"
   },
   "bin": {

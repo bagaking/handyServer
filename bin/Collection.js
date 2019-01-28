@@ -84,13 +84,13 @@ var Collection = /** @class */ (function () {
                         if (level !== '') {
                             query.level = level;
                         }
-                        if (timeFrom !== '' && timeTo !== '') {
+                        if (timeFrom !== '' || timeTo !== '') {
                             query.date = {};
                             if (timeFrom !== '') {
                                 query.date["$gte"] = new Date(timeFrom);
                             }
                             if (timeTo !== '') {
-                                query.date["$lt"] = new Date(timeTo);
+                                query.date["$lte"] = new Date(timeTo);
                             }
                         }
                         console.log("collection get", query);
