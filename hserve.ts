@@ -99,6 +99,10 @@ app.use(function (req, res, next) {
 
 app.use("/", express.static(servePath));
 
+app.get("/--info--", function (req, res) {
+    res.status(201).end(JSON.stringify(pkg, null,4));
+});
+
 const indexMode: string = argv.index.toLowerCase();
 if (indexMode !== 'off') {
     app.get("/--index--", function (req, res) {
@@ -191,7 +195,8 @@ app.listen(port, () => {
     console.log(`
 - Serve : 
     - path : ${servePath} 
-    - at : http://localhost:${port}/`);
+    - at : http://localhost:${port}/
+    - info : http://localhost:${port}/--info--`);
 
     if (!mockPath) {
         console.log('- Mock : off\n');

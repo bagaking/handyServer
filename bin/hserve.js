@@ -132,6 +132,9 @@ app.use(function (req, res, next) {
     next();
 });
 app.use("/", express.static(servePath));
+app.get("/--info--", function (req, res) {
+    res.status(201).end(JSON.stringify(pkg, null, 4));
+});
 var indexMode = argv.index.toLowerCase();
 if (indexMode !== 'off') {
     app.get("/--index--", function (req, res) {
@@ -224,7 +227,7 @@ app.listen(port, function () {
     console.log("==== Service Preparing (ver:" + pkg.version + ") =====");
     console.log('==>\n');
     console.log("- Root path : " + rootPath);
-    console.log("\n- Serve : \n    - path : " + servePath + " \n    - at : http://localhost:" + port + "/");
+    console.log("\n- Serve : \n    - path : " + servePath + " \n    - at : http://localhost:" + port + "/\n    - info : http://localhost:" + port + "/--info--");
     if (!mockPath) {
         console.log('- Mock : off\n');
     }
