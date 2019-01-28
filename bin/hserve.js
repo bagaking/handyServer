@@ -200,14 +200,18 @@ if (!!argv.collect && argv.collect !== '') {
             var collections;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, collection_1.get(req.params.tag, req.query.level, function (e) { res.status(500).end(e.stack); })];
+                    case 0: return [4 /*yield*/, collection_1.get(req.params.tag, req.query.level, req.query.time_from, req.query.time_to, function (e) {
+                            res.status(500).end(e.stack);
+                        })];
                     case 1:
                         collections = _a.sent();
                         if (collections.length === 0) {
                             res.status(201).end('empty');
                         }
                         else {
-                            collections.forEach(function (c) { c.dateISOStr = c.date.toISOString(); });
+                            collections.forEach(function (c) {
+                                c.dateISOStr = c.date.toISOString();
+                            });
                             res.status(201).end(JSON.stringify({ collections: collections }));
                         }
                         return [2 /*return*/];

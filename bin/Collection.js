@@ -66,9 +66,11 @@ var Collection = /** @class */ (function () {
         console.log("collection set", query);
         this.log.create(query, cbMongo);
     };
-    Collection.prototype.get = function (tag, level, cbError) {
+    Collection.prototype.get = function (tag, level, timeFrom, timeTo, cbError) {
         if (tag === void 0) { tag = ''; }
         if (level === void 0) { level = ''; }
+        if (timeFrom === void 0) { timeFrom = ''; }
+        if (timeTo === void 0) { timeTo = ''; }
         if (cbError === void 0) { cbError = null; }
         return __awaiter(this, void 0, void 0, function () {
             var query, ret;
@@ -81,6 +83,15 @@ var Collection = /** @class */ (function () {
                         }
                         if (level !== '') {
                             query.level = level;
+                        }
+                        if (timeFrom !== '' && timeTo !== '') {
+                            query.date = {};
+                            if (timeFrom !== '') {
+                                query.date["$gte"] = new Date(timeFrom);
+                            }
+                            if (timeTo !== '') {
+                                query.date["$lt"] = new Date(timeTo);
+                            }
                         }
                         console.log("collection get", query);
                         return [4 /*yield*/, this.log.find(query).sort({ date: 1 }).catch(cbError)];

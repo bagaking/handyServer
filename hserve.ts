@@ -80,35 +80,35 @@ const servePath = Path.join(rootPath, argv.dir);
 app.use(bodyParser.urlencoded())
 app.use(bodyParser.json())
 
-if(argv.log) {
+if (argv.log) {
     app.use(require('morgan')('short'));
 }
 
 app.use(cors())
 
-let requires : any = { _ALL_ : 0}
+let requires: any = {_ALL_: 0}
 app.use(function (req, res, next) {
 
-    if(!requires[req.originalUrl]) requires[req.originalUrl] = 1;
+    if (!requires[req.originalUrl]) requires[req.originalUrl] = 1;
     else requires[req.originalUrl] += 1;
     requires._ALL_ += 1;
-    if(requires._ALL_ % 1000 == 1) console.log(requires, Date.now(), new Date()) // print state every 1000 entries
+    if (requires._ALL_ % 1000 == 1) console.log(requires, Date.now(), new Date()) // print state every 1000 entries
 
     next();
 });
 
 app.use("/", express.static(servePath));
 
-const indexMode : string = argv.index.toLowerCase();
-if(indexMode !== 'off') {
+const indexMode: string = argv.index.toLowerCase();
+if (indexMode !== 'off') {
     app.get("/--index--", function (req, res) {
-        let files: Array<string|object> = [];
+        let files: Array<string | object> = [];
         let walker = walk.walk(servePath, {followLinks: false});
         walker.on('file', function (root, stat, next) {
             let route = root.replace(servePath, "");
             let file = stat;
-            if(indexMode === "name") {
-                files.push(indexMode === "name" ? Path.join(route, file.name) : {route, file });
+            if (indexMode === "name") {
+                files.push(indexMode === "name" ? Path.join(route, file.name) : {route, file});
             }
             next();
         });
@@ -119,25 +119,25 @@ if(indexMode !== 'off') {
 }
 
 
-let mockPath : string;
-let mockFiles : Map<string, any>;
-if(!!argv.mock){
+let mockPath: string;
+let mockFiles: Map<string, any>;
+if (!!argv.mock) {
     mockPath = Path.join(rootPath, argv.mock);
     mockFiles = new Map<string, any>();
 
-    const mockFile = (path: string, routeParent : string = '') => {
+    const mockFile = (path: string, routeParent: string = '') => {
 
         console.log("load", path);
 
         let fstat = fs.lstatSync(path);
-        let filename :string = Path.parse(path).name;
+        let filename: string = Path.parse(path).name;
         let route = (routeParent) ? Path.join(routeParent, filename) : "/api";
 
-        if(fstat.isDirectory()){
+        if (fstat.isDirectory()) {
             console.log("dir", path);
             const files = fs.readdirSync(path).filter(file => !file.match(/\..*\.swp/));
             files.forEach(file => mockFile(Path.join(path, file), route));
-        }else if(fstat.isFile()){
+        } else if (fstat.isFile()) {
             console.log("file", path);
             mockFiles.set(route, path);
             app.get(route, function (req, res) {
@@ -149,33 +149,37 @@ if(!!argv.mock){
     mockFile(mockPath);
 }
 
-if(!!argv.collect && argv.collect !== ''){
+if (!!argv.collect && argv.collect !== '') {
     let collection = new Collection(argv.collect);
 
-    app.get('/--collect--/add/:tag', function(req, res) {
+    app.get('/--collect--/add/:tag', function (req, res) {
         let msg = decodeURIComponent(req.query.msg || '');
-        collection.add(req.params.tag, msg,req.query.level || 'log', function(e : any){
-            if(e) return res.status(500).end(e.stack);
+        collection.add(req.params.tag, msg, req.query.level || 'log', function (e: any) {
+            if (e) return res.status(500).end(e.stack);
             res.status(201).end(`${req.params.tag} : ${msg} are collected.`);
         })
     });
 
-    app.post('/--collect--/add/:tag', function(req, res) {
+    app.post('/--collect--/add/:tag', function (req, res) {
         console.log(req.body)
         let msg = decodeURIComponent(req.body.msg || '');
-        collection.add(req.params.tag, msg,req.body.level || 'log', function(e : any){
-            if(e) return res.status(500).end(e.stack);
+        collection.add(req.params.tag, msg, req.body.level || 'log', function (e: any) {
+            if (e) return res.status(500).end(e.stack);
             res.status(201).end(`${req.params.tag} : ${msg} are collected.`);
         })
     });
 
-    app.get('/--collect--/get/:tag?', async function(req, res) {
-        let collections : any = await collection.get(req.params.tag, req.query.level, function(e:any){ res.status(500).end(e.stack); })
-        if (collections.length === 0){
+    app.get('/--collect--/get/:tag?', async function (req, res) {
+        let collections: any = await collection.get(req.params.tag, req.query.level, req.query.time_from, req.query.time_to, function (e: any) {
+            res.status(500).end(e.stack);
+        })
+        if (collections.length === 0) {
             res.status(201).end('empty');
-        }else{
-            collections.forEach(function(c : any) { c.dateISOStr = c.date.toISOString(); })
-            res.status(201).end( JSON.stringify( { collections }));
+        } else {
+            collections.forEach(function (c: any) {
+                c.dateISOStr = c.date.toISOString();
+            })
+            res.status(201).end(JSON.stringify({collections}));
         }
     });
 }
@@ -189,15 +193,15 @@ app.listen(port, () => {
     - path : ${servePath} 
     - at : http://localhost:${port}/`);
 
-    if(!mockPath){
+    if (!mockPath) {
         console.log('- Mock : off\n');
-    }else{
+    } else {
         console.log(`
 - Mock :
     - path : ${mockPath}
     - at : http://localhost:${port}/api/
     - api :`);
-        mockFiles.forEach((_,i) =>{
+        mockFiles.forEach((_, i) => {
             console.log(`       - ${i}`);
         })
         console.log('');
@@ -206,13 +210,13 @@ app.listen(port, () => {
 
     console.log('- Log :', argv.log ? "on" : "off", '\n')
     console.log(
-`- index : ${argv.index} 
+        `- index : ${argv.index} 
     - at : http://localhost:${port}/--index--
     `
     )
 
     console.log(
-`- collect : ${argv.collect ? 'on' : 'off'}
+        `- collect : ${argv.collect ? 'on' : 'off'}
     - mongo : ${argv.collect}
     - add : http://localhost:${port}/--collect--/add/:tag?msg=&level=
     - get : http://localhost:${port}/--collect--/get/:tag?level=
