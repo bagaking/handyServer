@@ -4,13 +4,13 @@ import * as express from 'express';
 import * as Argv from 'yargs'
 import Path from 'path';
 import fs from 'fs';
-import walk from 'walk';
 
 import bodyParser from 'body-parser'
 
 let pkg = require('./package.json');
 
-import Collection from './Collection'
+import Collection from './src/collection'
+import { indexingPath } from './src/indexing'
 import cors from 'cors'
 
 
@@ -105,20 +105,8 @@ app.get("/--info--", function (req, res) {
 
 const indexMode: string = argv.index.toLowerCase();
 if (indexMode !== 'off') {
-    app.get("/--index--", function (req, res) {
-        let files: Array<string | object> = [];
-        let walker = walk.walk(servePath, {followLinks: false});
-        walker.on('file', function (root, stat, next) {
-            let route = root.replace(servePath, "");
-            let file = stat;
-            if (indexMode === "name") {
-                files.push(indexMode === "name" ? Path.join(route, file.name) : {route, file});
-            }
-            next();
-        });
-        walker.on('end', function () {
-            res.send(files);
-        });
+    app.get("/--index--", async function (req, res) {
+        res.send(await indexingPath("name", servePath));
     })
 }
 
@@ -221,7 +209,7 @@ app.listen(port, () => {
     )
 
     console.log(
-        `- collect : ${argv.collect ? 'on' : 'off'}
+    `- collect : ${argv.collect ? 'on' : 'off'}
     - mongo : ${argv.collect}
     - add : http://localhost:${port}/--collect--/add/:tag?msg=&level=
     - get : http://localhost:${port}/--collect--/get/:tag?level=

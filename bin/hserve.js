@@ -50,10 +50,10 @@ var express = __importStar(require("express"));
 var Argv = __importStar(require("yargs"));
 var path_1 = __importDefault(require("path"));
 var fs_1 = __importDefault(require("fs"));
-var walk_1 = __importDefault(require("walk"));
 var body_parser_1 = __importDefault(require("body-parser"));
 var pkg = require('./package.json');
-var Collection_1 = __importDefault(require("./Collection"));
+var collection_1 = __importDefault(require("./src/collection"));
+var indexing_1 = require("./src/indexing");
 var cors_1 = __importDefault(require("cors"));
 var argv = Argv
     .option('d', {
@@ -138,18 +138,18 @@ app.get("/--info--", function (req, res) {
 var indexMode = argv.index.toLowerCase();
 if (indexMode !== 'off') {
     app.get("/--index--", function (req, res) {
-        var files = [];
-        var walker = walk_1.default.walk(servePath, { followLinks: false });
-        walker.on('file', function (root, stat, next) {
-            var route = root.replace(servePath, "");
-            var file = stat;
-            if (indexMode === "name") {
-                files.push(indexMode === "name" ? path_1.default.join(route, file.name) : { route: route, file: file });
-            }
-            next();
-        });
-        walker.on('end', function () {
-            res.send(files);
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _b = (_a = res).send;
+                        return [4 /*yield*/, indexing_1.indexingPath("name", servePath)];
+                    case 1:
+                        _b.apply(_a, [_c.sent()]);
+                        return [2 /*return*/];
+                }
+            });
         });
     });
 }
@@ -180,10 +180,10 @@ if (!!argv.mock) {
     mockFile_1(mockPath);
 }
 if (!!argv.collect && argv.collect !== '') {
-    var collection_1 = new Collection_1.default(argv.collect);
+    var collection_2 = new collection_1.default(argv.collect);
     app.get('/--collect--/add/:tag', function (req, res) {
         var msg = decodeURIComponent(req.query.msg || '');
-        collection_1.add(req.params.tag, msg, req.query.level || 'log', function (e) {
+        collection_2.add(req.params.tag, msg, req.query.level || 'log', function (e) {
             if (e)
                 return res.status(500).end(e.stack);
             res.status(201).end(req.params.tag + " : " + msg + " are collected.");
@@ -192,7 +192,7 @@ if (!!argv.collect && argv.collect !== '') {
     app.post('/--collect--/add/:tag', function (req, res) {
         console.log(req.body);
         var msg = decodeURIComponent(req.body.msg || '');
-        collection_1.add(req.params.tag, msg, req.body.level || 'log', function (e) {
+        collection_2.add(req.params.tag, msg, req.body.level || 'log', function (e) {
             if (e)
                 return res.status(500).end(e.stack);
             res.status(201).end(req.params.tag + " : " + msg + " are collected.");
@@ -203,7 +203,7 @@ if (!!argv.collect && argv.collect !== '') {
             var collections;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, collection_1.get(req.params.tag, req.query.level, req.query.time_from, req.query.time_to, function (e) {
+                    case 0: return [4 /*yield*/, collection_2.get(req.params.tag, req.query.level, req.query.time_from, req.query.time_to, function (e) {
                             res.status(500).end(e.stack);
                         })];
                     case 1:

@@ -1,6 +1,7 @@
 # Dirs
 _**/
 **.idea/
+.DS_Store
 
 # Logs
 logs
