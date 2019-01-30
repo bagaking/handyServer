@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-export default class Collection {
+export default class Collecting {
     log: Model<any>;
     constructor(conn?: string);
     add(tag?: string, msg?: string, level?: string, cbMongo?: any): void;

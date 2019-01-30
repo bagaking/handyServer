@@ -13,7 +13,7 @@ var LogSchema = new mongoose.Schema({
     }
 });
 
-export default class Collection {
+export default class Collecting {
 
     public log: Model<any>;
 
@@ -46,7 +46,6 @@ export default class Collection {
                 query.date["$lte"] = new Date(timeTo);
             }
         }
-
 
         console.log("collection get", query);
         let ret = await this.log.find(query).sort({date: 1}).catch(cbError);

@@ -49,11 +49,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var express = __importStar(require("express"));
 var Argv = __importStar(require("yargs"));
 var path_1 = __importDefault(require("path"));
-var fs_1 = __importDefault(require("fs"));
 var body_parser_1 = __importDefault(require("body-parser"));
 var pkg = require('./package.json');
-var collection_1 = __importDefault(require("./src/collection"));
+var collecting_1 = __importDefault(require("./src/collecting"));
 var indexing_1 = require("./src/indexing");
+var mocking_1 = require("./src/mocking");
 var cors_1 = __importDefault(require("cors"));
 var argv = Argv
     .option('d', {
@@ -157,33 +157,21 @@ var mockPath;
 var mockFiles;
 if (!!argv.mock) {
     mockPath = path_1.default.join(rootPath, argv.mock);
-    mockFiles = new Map();
-    var mockFile_1 = function (path, routeParent) {
-        if (routeParent === void 0) { routeParent = ''; }
-        console.log("load", path);
-        var fstat = fs_1.default.lstatSync(path);
-        var filename = path_1.default.parse(path).name;
-        var route = (routeParent) ? path_1.default.join(routeParent, filename) : "/api";
-        if (fstat.isDirectory()) {
-            console.log("dir", path);
-            var files = fs_1.default.readdirSync(path).filter(function (file) { return !file.match(/\..*\.swp/); });
-            files.forEach(function (file) { return mockFile_1(path_1.default.join(path, file), route); });
-        }
-        else if (fstat.isFile()) {
-            console.log("file", path);
-            mockFiles.set(route, path);
-            app.get(route, function (req, res) {
-                res.send(JSON.stringify(require(mockFiles.get(route))));
-            });
-        }
-    };
-    mockFile_1(mockPath);
+    mockFiles = mocking_1.mockingPath(mockPath);
+    // console.log(mockPath, mockFiles);
+    mockFiles.forEach(function (value, route) {
+        console.log("mock", route, value);
+        var routeAll = path_1.default.join("/api", route);
+        app.get(routeAll, function (req, res) {
+            res.send(JSON.stringify(require(value)));
+        });
+    });
 }
 if (!!argv.collect && argv.collect !== '') {
-    var collection_2 = new collection_1.default(argv.collect);
+    var collecting_2 = new collecting_1.default(argv.collect);
     app.get('/--collect--/add/:tag', function (req, res) {
         var msg = decodeURIComponent(req.query.msg || '');
-        collection_2.add(req.params.tag, msg, req.query.level || 'log', function (e) {
+        collecting_2.add(req.params.tag, msg, req.query.level || 'log', function (e) {
             if (e)
                 return res.status(500).end(e.stack);
             res.status(201).end(req.params.tag + " : " + msg + " are collected.");
@@ -192,7 +180,7 @@ if (!!argv.collect && argv.collect !== '') {
     app.post('/--collect--/add/:tag', function (req, res) {
         console.log(req.body);
         var msg = decodeURIComponent(req.body.msg || '');
-        collection_2.add(req.params.tag, msg, req.body.level || 'log', function (e) {
+        collecting_2.add(req.params.tag, msg, req.body.level || 'log', function (e) {
             if (e)
                 return res.status(500).end(e.stack);
             res.status(201).end(req.params.tag + " : " + msg + " are collected.");
@@ -203,7 +191,7 @@ if (!!argv.collect && argv.collect !== '') {
             var collections;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, collection_2.get(req.params.tag, req.query.level, req.query.time_from, req.query.time_to, function (e) {
+                    case 0: return [4 /*yield*/, collecting_2.get(req.params.tag, req.query.level, req.query.time_from, req.query.time_to, function (e) {
                             res.status(500).end(e.stack);
                         })];
                     case 1:

@@ -51,13 +51,13 @@ var LogSchema = new mongoose_1.default.Schema({
         default: '_'
     }
 });
-var Collection = /** @class */ (function () {
-    function Collection(conn) {
+var Collecting = /** @class */ (function () {
+    function Collecting(conn) {
         if (conn === void 0) { conn = 'mongodb://localhost/logs'; }
         mongoose_1.default.connect(conn, { useNewUrlParser: true });
         this.log = mongoose_1.default.model('log', LogSchema);
     }
-    Collection.prototype.add = function (tag, msg, level, cbMongo) {
+    Collecting.prototype.add = function (tag, msg, level, cbMongo) {
         if (tag === void 0) { tag = ""; }
         if (msg === void 0) { msg = ""; }
         if (level === void 0) { level = 'log'; }
@@ -66,7 +66,7 @@ var Collection = /** @class */ (function () {
         console.log("collection set", query);
         this.log.create(query, cbMongo);
     };
-    Collection.prototype.get = function (tag, level, timeFrom, timeTo, cbError) {
+    Collecting.prototype.get = function (tag, level, timeFrom, timeTo, cbError) {
         if (tag === void 0) { tag = ''; }
         if (level === void 0) { level = ''; }
         if (timeFrom === void 0) { timeFrom = ''; }
@@ -102,6 +102,6 @@ var Collection = /** @class */ (function () {
             });
         });
     };
-    return Collection;
+    return Collecting;
 }());
-exports.default = Collection;
+exports.default = Collecting;

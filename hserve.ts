@@ -3,16 +3,15 @@
 import * as express from 'express';
 import * as Argv from 'yargs'
 import Path from 'path';
-import fs from 'fs';
 
 import bodyParser from 'body-parser'
 
 let pkg = require('./package.json');
 
-import Collection from './src/collection'
+import Collecting from './src/collecting'
 import { indexingPath } from './src/indexing'
+import { mockingPath } from './src/mocking'
 import cors from 'cors'
-
 
 const argv = Argv
     .option('d', {
@@ -115,38 +114,24 @@ let mockPath: string;
 let mockFiles: Map<string, any>;
 if (!!argv.mock) {
     mockPath = Path.join(rootPath, argv.mock);
-    mockFiles = new Map<string, any>();
+    mockFiles = mockingPath(mockPath);
+    // console.log(mockPath, mockFiles);
 
-    const mockFile = (path: string, routeParent: string = '') => {
-
-        console.log("load", path);
-
-        let fstat = fs.lstatSync(path);
-        let filename: string = Path.parse(path).name;
-        let route = (routeParent) ? Path.join(routeParent, filename) : "/api";
-
-        if (fstat.isDirectory()) {
-            console.log("dir", path);
-            const files = fs.readdirSync(path).filter(file => !file.match(/\..*\.swp/));
-            files.forEach(file => mockFile(Path.join(path, file), route));
-        } else if (fstat.isFile()) {
-            console.log("file", path);
-            mockFiles.set(route, path);
-            app.get(route, function (req, res) {
-                res.send(JSON.stringify(require(mockFiles.get(route))));
-            });
-        }
-    }
-
-    mockFile(mockPath);
+    mockFiles.forEach((value, route) => {
+        console.log("mock", route, value)
+        let routeAll = Path.join("/api", route)
+        app.get(routeAll, function (req, res) {
+            res.send(JSON.stringify(require(value)));
+        });
+    })
 }
 
 if (!!argv.collect && argv.collect !== '') {
-    let collection = new Collection(argv.collect);
+    let collecting = new Collecting(argv.collect);
 
     app.get('/--collect--/add/:tag', function (req, res) {
         let msg = decodeURIComponent(req.query.msg || '');
-        collection.add(req.params.tag, msg, req.query.level || 'log', function (e: any) {
+        collecting.add(req.params.tag, msg, req.query.level || 'log', function (e: any) {
             if (e) return res.status(500).end(e.stack);
             res.status(201).end(`${req.params.tag} : ${msg} are collected.`);
         })
@@ -155,14 +140,14 @@ if (!!argv.collect && argv.collect !== '') {
     app.post('/--collect--/add/:tag', function (req, res) {
         console.log(req.body)
         let msg = decodeURIComponent(req.body.msg || '');
-        collection.add(req.params.tag, msg, req.body.level || 'log', function (e: any) {
+        collecting.add(req.params.tag, msg, req.body.level || 'log', function (e: any) {
             if (e) return res.status(500).end(e.stack);
             res.status(201).end(`${req.params.tag} : ${msg} are collected.`);
         })
     });
 
     app.get('/--collect--/get/:tag?', async function (req, res) {
-        let collections: any = await collection.get(req.params.tag, req.query.level, req.query.time_from, req.query.time_to, function (e: any) {
+        let collections: any = await collecting.get(req.params.tag, req.query.level, req.query.time_from, req.query.time_to, function (e: any) {
             res.status(500).end(e.stack);
         })
         if (collections.length === 0) {
