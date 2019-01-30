@@ -35,6 +35,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -231,3 +234,6 @@ app.listen(port, function () {
     console.log("- collect : " + (argv.collect ? 'on' : 'off') + "\n    - mongo : " + argv.collect + "\n    - add : http://localhost:" + port + "/--collect--/add/:tag?msg=&level=\n    - get : http://localhost:" + port + "/--collect--/get/:tag?level=\n    ");
     console.log('**** Service Running ******\n');
 });
+__export(require("./src/collecting"));
+__export(require("./src/indexing"));
+__export(require("./src/mocking"));
