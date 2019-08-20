@@ -1,13 +1,13 @@
 {
   "name": "hserve",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "bin/index.js",
   "license": "MIT",
   "repository": "git@github.com:bagaking/handyServer.git",
   "description": "easy http server",
   "author": "kinghand(kinghand@foxmail.com)",
   "scripts": {
-    "tsc": "tsc -d && cp package.json ./bin/",
+    "tsc": "tsc -d",
     "build": "rimraf ./bin && npm run tsc",
     "serve": "node ./bin/hserve.js"
   },
