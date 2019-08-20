@@ -8,10 +8,6 @@ import { Container } from "typedi";
 import { forCondition } from "kht";
 import { Controller } from "./controller";
 
-import * as Mount from "koa-mount"
-import * as Static from "koa-static"
-import {turtleVerbose} from "@khgame/turtle/lib/core/utils/turtleVerbose";
-
 if (!require) {
     throw new Error("Cannot load routing-controllers. Try to install all required dependencies.");
 }
@@ -98,15 +94,14 @@ export class Api implements IApi {
         });
 
         if (this.middlewares) {
-            this.middlewares.forEach(m => this.koa.use(m));
+            this.middlewares.forEach(
+                m => this.koa.use(m)
+            );
         }
 
-        const staticServe = new Koa();
-        staticServe.use(Static(process.cwd()));
-        this.koa.use(Mount("/static", staticServe));
 
         this.koa = useKoaServer(this.koa, {
-            routePrefix: "/api",
+            routePrefix: "/api/v1",
             validation: true,
             cors: true,
             classTransformer: false,

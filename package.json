@@ -12,7 +12,7 @@
     "serve": "node ./bin/hserve.js"
   },
   "bin": {
-    "hserve": "bin/hserve.js"
+    "hserve": "bin/index.js"
   },
   "dependencies": {
     "@khgame/turtle": "^0.0.81",
