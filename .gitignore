@@ -2,6 +2,8 @@
 _**/
 **.idea/
 .DS_Store
+bin/
+.*.turtle
 
 # Logs
 logs
