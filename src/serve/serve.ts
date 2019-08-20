@@ -18,17 +18,17 @@ const defaultConf = {
 };
 
 
-export async function server(cmd: {dir?: string, port?: number, api?: string} = {}) {
+export async function server(cmd: {dir?: string, port?: string, api?: string} = {}) {
     let {dir, port, api} = cmd;
     dir = dir || ".";
-    port = port > 0 ? port : 3000;
+    let portNum = parseInt(port);
+    portNum = portNum> 0 ? portNum : 3000;
     api = api || "static";
 
     turtle.conf = defaultConf;
-    turtle.conf.port = port;
+    turtle.conf.port = portNum;
     turtle.runtime.updateEnvInfo();
 
-    console.log("alias", api);
     if (api.startsWith("/api") || api.startsWith("api")) {
         throw new Error(`alias ${api} cannot be start with api `)
     }
@@ -37,8 +37,6 @@ export async function server(cmd: {dir?: string, port?: number, api?: string} = 
 
     const path = Path.isAbsolute(dir) ? dir : Path.resolve(process.cwd(), dir);
     staticServe.use(Static(path));
-
-    console.log(api, path);
 
     await turtle.startAll(
         new Api(

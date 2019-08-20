@@ -21,7 +21,7 @@ export const serve: ICmd = {
             input: true
         }
     },
-    exec: async (cmd: { dir: string, port: number, api: string }) => {
+    exec: async (cmd: { dir: string, port: string, api: string }) => {
 
         await server(cmd);
     }
