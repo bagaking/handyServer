@@ -1,8 +1,7 @@
 import "reflect-metadata";
-import * as Koa from "koa";
-import { Context } from "koa";
+import Koa, { Context } from "koa";
 import { createServer, Server } from "http";
-import {genLogger, IApi, APIRunningState, CError, Logger} from "@khgame/turtle";
+import { genLogger, IApi, APIRunningState, CError, Logger } from "@khgame/turtle";
 import { Action } from "routing-controllers";
 import { Container } from "typedi";
 import { forCondition } from "kht";

@@ -5,6 +5,10 @@ const mockFiles = new Map<string, any>();
 export function mockingPath(path: string, routeParent: string = '-') {
     // console.log("[mockFile] load", path);
 
+    if (routeParent === '-') {
+        mockFiles.clear();
+    }
+
     let fstat = fs.lstatSync(path);
     let filename: string = Path.parse(path).name;
 
