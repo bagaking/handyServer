@@ -1,10 +1,10 @@
-import {turtle} from "@khgame/turtle";
-import {Api} from "./api";
+import { turtle } from "@khgame/turtle";
+import { Api } from "./api";
 
-import * as Koa from "koa";
-import * as Mount from "koa-mount"
-import * as Static from "koa-static"
-import * as Path from "path";
+import Koa from "koa";
+import mount from "koa-mount";
+import serveStatic from "koa-static";
+import Path from "path";
 
 const defaultConf = {
     "name": "hserve",
@@ -36,14 +36,14 @@ export async function server(cmd: {dir?: string, port?: string, api?: string} = 
     const staticServe = new Koa();
 
     const path = Path.isAbsolute(dir) ? dir : Path.resolve(process.cwd(), dir);
-    staticServe.use(Static(path));
+    staticServe.use(serveStatic(path));
 
     await turtle.startAll(
         new Api(
             1000,
             undefined,
             [
-                Mount(api.startsWith("/") ? api : "/" + api,
+                mount(api.startsWith("/") ? api : "/" + api,
                     staticServe
                 )
             ])
