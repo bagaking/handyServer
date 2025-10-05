@@ -8,10 +8,10 @@ const packOutput = execFileSync('npm', ['pack', '--dry-run', '--json'], {
 });
 const [packInfo] = JSON.parse(packOutput);
 const files = new Set(packInfo.files.map((file) => file.path));
-const requiredFiles = [
+const requiredFiles = new Set([
   packageJson.main,
   packageJson.bin?.hserve,
-];
+]);
 
 for (const file of requiredFiles) {
   if (!file || !files.has(file)) {
@@ -19,4 +19,13 @@ for (const file of requiredFiles) {
   }
 }
 
-console.log(`npm pack includes ${requiredFiles.join(', ')}`);
+const binEntry = packageJson.bin?.hserve;
+if (binEntry) {
+  const binContents = readFileSync(binEntry, 'utf8');
+  const expectedShebang = ['#!', 'usr', 'bin', 'env node'].join('/');
+  if (!binContents.startsWith(expectedShebang)) {
+    throw new Error(`npm bin entry is missing node shebang: ${binEntry}`);
+  }
+}
+
+console.log(`npm pack includes ${[...requiredFiles].join(', ')}`);
