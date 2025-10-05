@@ -35,5 +35,8 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Check serve options
+        run: npm run check:serve-options
+
       - name: Check package contents
         run: pnpm run check:pack
