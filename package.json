@@ -9,6 +9,7 @@
   "scripts": {
     "tsc": "tsc -d",
     "build": "rimraf ./bin && npm run tsc",
+    "prepack": "npm run build",
     "serve": "node ./bin/hserve.js"
   },
   "bin": {

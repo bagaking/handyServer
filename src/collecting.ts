@@ -18,7 +18,7 @@ export default class Collecting {
     public log: Model<any>;
 
     constructor(conn: string = 'mongodb://localhost/logs') {
-        mongoose.connect(conn, {useNewUrlParser: true});
+        mongoose.connect(conn);
         this.log = mongoose.model('log', LogSchema);
     }
 
