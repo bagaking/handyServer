@@ -6,6 +6,10 @@
   "repository": "git@github.com:bagaking/handyServer.git",
   "description": "easy http server",
   "author": "kinghand(kinghand@foxmail.com)",
+  "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "tsc": "tsc -d",
     "build": "rimraf ./bin && npm run tsc",
