@@ -21,7 +21,6 @@
     |---|---|---|---|---|
     |--port|-p|True|Set port of hserve|3000|
     |--dir|-d|True|Set the directory of the service, support relative and absolute paths|$PWD|
-    |--api|-a|True|Set api-url of static file service|/static|
-
+    |--api|-a|True|Set api-url of static file service. The route is normalized to a leading slash and cannot start with `/api`|/static|
 
 

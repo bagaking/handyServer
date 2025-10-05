@@ -4,7 +4,7 @@ import { Api } from "./api";
 import Koa from "koa";
 import mount from "koa-mount";
 import serveStatic from "koa-static";
-import Path from "path";
+import { normalizeServeOptions, ServeCommandOptions } from "./options";
 
 const defaultConf = {
     "name": "hserve",
@@ -18,32 +18,23 @@ const defaultConf = {
 };
 
 
-export async function server(cmd: {dir?: string, port?: string, api?: string} = {}) {
-    let {dir, port, api} = cmd;
-    dir = dir || ".";
-    let portNum = parseInt(port);
-    portNum = portNum> 0 ? portNum : 3000;
-    api = api || "static";
+export async function server(cmd: ServeCommandOptions = {}) {
+    const options = normalizeServeOptions(cmd);
 
     turtle.conf = defaultConf;
-    turtle.conf.port = portNum;
+    turtle.conf.port = options.port;
     turtle.runtime.updateEnvInfo();
-
-    if (api.startsWith("/api") || api.startsWith("api")) {
-        throw new Error(`alias ${api} cannot be start with api `)
-    }
 
     const staticServe = new Koa();
 
-    const path = Path.isAbsolute(dir) ? dir : Path.resolve(process.cwd(), dir);
-    staticServe.use(serveStatic(path));
+    staticServe.use(serveStatic(options.dir));
 
     await turtle.startAll(
         new Api(
             1000,
             undefined,
             [
-                mount(api.startsWith("/") ? api : "/" + api,
+                mount(options.apiRoute,
                     staticServe
                 )
             ])
