@@ -32,14 +32,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck
-        run: pnpm exec tsc --noEmit
-
-      - name: Build
-        run: pnpm run build
-
-      - name: Check serve options
-        run: pnpm run check:serve-options
-
-      - name: Check package contents
-        run: pnpm run check:pack
+      - name: Run CI checks
+        run: pnpm run ci
