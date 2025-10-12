@@ -23,7 +23,7 @@
     "build": "rimraf ./bin && pnpm run tsc",
     "check:serve-options": "pnpm run build && node scripts/check-serve-options.mjs",
     "check:pack": "node scripts/check-pack-contents.mjs",
-    "ci": "pnpm run typecheck && pnpm run build && pnpm run check:serve-options && pnpm run check:pack",
+    "ci": "pnpm run typecheck && pnpm run check:serve-options && pnpm run check:pack",
     "prepack": "pnpm run build",
     "serve": "node ./bin/hserve.js"
   },
