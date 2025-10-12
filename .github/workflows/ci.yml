@@ -39,7 +39,7 @@ jobs:
         run: pnpm run build
 
       - name: Check serve options
-        run: npm run check:serve-options
+        run: pnpm run check:serve-options
 
       - name: Check package contents
         run: pnpm run check:pack
