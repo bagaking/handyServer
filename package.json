@@ -19,10 +19,10 @@
   },
   "scripts": {
     "tsc": "tsc -d",
-    "build": "rimraf ./bin && npm run tsc",
-    "check:serve-options": "npm run build && node scripts/check-serve-options.mjs",
+    "build": "rimraf ./bin && pnpm run tsc",
+    "check:serve-options": "pnpm run build && node scripts/check-serve-options.mjs",
     "check:pack": "node scripts/check-pack-contents.mjs",
-    "prepack": "npm run build",
+    "prepack": "pnpm run build",
     "serve": "node ./bin/hserve.js"
   },
   "bin": {

@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
-const packOutput = execFileSync('npm', ['pack', '--dry-run', '--json'], {
+const packOutput = execFileSync('npm', ['pack', '--dry-run', '--json', '--foreground-scripts=false'], {
   encoding: 'utf8',
   stdio: ['ignore', 'pipe', 'inherit'],
 });
