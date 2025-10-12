@@ -3,7 +3,14 @@
   "version": "0.1.3",
   "main": "bin/src/index.js",
   "license": "MIT",
-  "repository": "git@github.com:bagaking/handyServer.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bagaking/handyServer.git"
+  },
+  "homepage": "https://github.com/bagaking/handyServer#readme",
+  "bugs": {
+    "url": "https://github.com/bagaking/handyServer/issues"
+  },
   "description": "easy http server",
   "author": "kinghand(kinghand@foxmail.com)",
   "packageManager": "pnpm@10.12.1",
