@@ -87,3 +87,7 @@ the dry-run npm package includes the configured `main` and `bin` entries.
 - Invalid ports fall back to the default port instead of failing the command.
 - The `api` route family is reserved by the server. Use another static route,
   such as `static`, `assets`, or `files`.
+
+## License
+
+Released under the [MIT License](LICENSE).
