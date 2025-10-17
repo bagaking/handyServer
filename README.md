@@ -63,21 +63,17 @@ hserve serve -d ./dist -p 3001 -a files
 
 ## Validation
 
-The CI workflow installs dependencies with pnpm, typechecks, builds, validates
-serve option normalization, and checks package contents. The same lightweight
-checks can be run locally:
+The CI workflow installs dependencies with pnpm and runs the local CI script:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm exec tsc --noEmit
-pnpm run build
-pnpm run check:serve-options
-pnpm run check:pack
+pnpm run ci
 ```
 
-`pnpm run check:serve-options` rebuilds before running the option normalization
-checks in `scripts/check-serve-options.mjs`. `pnpm run check:pack` verifies that
-the dry-run npm package includes the configured `main` and `bin` entries.
+`pnpm run ci` typechecks, validates serve option normalization, runs the real
+process serve behavior smoke checks in `scripts/check-serve-behavior.mjs`, and
+verifies that the dry-run npm package includes the configured `main` and `bin`
+entries.
 
 ## Current Boundaries
 
