@@ -28,6 +28,17 @@ try {
     await assertHealth(baseUrl, '--dir pointing at a file should keep the API route available');
     await assertNotFound(urlFor(baseUrl, staticRoute, 'not-a-dir.txt'));
   });
+
+  await withLegacyServer({ dir: staticDir }, async (baseUrl, getOutput) => {
+    await assertServed(urlFor(baseUrl, '--info--'), (body) => {
+      assert.equal(body.includes('"name":"hserve"'), true, '--info-- should return package metadata');
+    });
+    assert.equal(
+      getOutput().includes('[hserve] request stats'),
+      false,
+      'request stats should only be logged when --log is enabled',
+    );
+  });
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });
 }
@@ -73,6 +84,42 @@ async function withServer(options, runAssertions) {
   }
 }
 
+async function withLegacyServer(options, runAssertions) {
+  const port = await getAvailablePort();
+  const child = spawn(
+    process.execPath,
+    [
+      'bin/hserve.js',
+      '--dir',
+      options.dir,
+      '--port',
+      String(port),
+    ],
+    {
+      env: { ...process.env, NODE_ENV: 'test' },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  );
+
+  let output = '';
+  child.stdout.setEncoding('utf8');
+  child.stderr.setEncoding('utf8');
+  child.stdout.on('data', (chunk) => {
+    output += chunk;
+  });
+  child.stderr.on('data', (chunk) => {
+    output += chunk;
+  });
+
+  try {
+    const baseUrl = `http://127.0.0.1:${port}`;
+    await waitForLegacyInfo(baseUrl, child, () => output);
+    await runAssertions(baseUrl, () => output);
+  } finally {
+    await stopServer(child);
+  }
+}
+
 async function waitForHealth(baseUrl, child, getOutput) {
   let lastError;
 
@@ -98,6 +145,31 @@ async function waitForHealth(baseUrl, child, getOutput) {
   throw new Error(`server did not become ready: ${lastError?.message || lastError}\n${getOutput()}`);
 }
 
+async function waitForLegacyInfo(baseUrl, child, getOutput) {
+  let lastError;
+
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    if (child.exitCode !== null) {
+      throw new Error(`legacy server exited before becoming ready with code ${child.exitCode}\n${getOutput()}`);
+    }
+
+    try {
+      const response = await fetchWithTimeout(urlFor(baseUrl, '--info--'));
+      if (response.status === 200) {
+        await response.text();
+        return;
+      }
+      lastError = new Error(`info returned HTTP ${response.status}`);
+    } catch (error) {
+      lastError = error;
+    }
+
+    await delay(100);
+  }
+
+  throw new Error(`legacy server did not become ready: ${lastError?.message || lastError}\n${getOutput()}`);
+}
+
 async function assertHealth(baseUrl, message) {
   const response = await fetchWithTimeout(urlFor(baseUrl, 'api', 'v1', 'health'));
   const body = await response.text();
@@ -118,7 +190,11 @@ async function assertServed(url, expectedBody) {
   const body = await response.text();
 
   assert.equal(response.status, 200, `static request should be served: ${url}`);
-  assert.equal(body, expectedBody, `static response body should match fixture: ${url}`);
+  if (typeof expectedBody === 'function') {
+    expectedBody(body);
+  } else {
+    assert.equal(body, expectedBody, `static response body should match fixture: ${url}`);
+  }
 }
 
 async function fetchWithTimeout(url) {

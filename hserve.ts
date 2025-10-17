@@ -80,32 +80,32 @@ const servePath = Path.join(rootPath, argv.dir as string);
 app.use(cors());
 app.use(bodyParser());
 
-let totalRequests = 0;
-const requestStats = new Map<string, number>();
-const MAX_TRACKED_PATHS = 500;
-
-app.use(async (ctx, next) => {
-    const url = ctx.originalUrl;
-    totalRequests += 1;
-
-    if (!requestStats.has(url) && requestStats.size >= MAX_TRACKED_PATHS) {
-        const firstKey = requestStats.keys().next();
-        if (!firstKey.done) {
-            requestStats.delete(firstKey.value);
-        }
-    }
-
-    requestStats.set(url, (requestStats.get(url) || 0) + 1);
-
-    if (totalRequests % 1000 === 1) {
-        const sample = Array.from(requestStats.entries()).slice(0, 5);
-        console.log('[hserve] request stats', { total: totalRequests, sample });
-    }
-
-    await next();
-});
-
 if (argv.log) {
+    let totalRequests = 0;
+    const requestStats = new Map<string, number>();
+    const MAX_TRACKED_PATHS = 500;
+
+    app.use(async (ctx, next) => {
+        const url = ctx.originalUrl;
+        totalRequests += 1;
+
+        if (!requestStats.has(url) && requestStats.size >= MAX_TRACKED_PATHS) {
+            const firstKey = requestStats.keys().next();
+            if (!firstKey.done) {
+                requestStats.delete(firstKey.value);
+            }
+        }
+
+        requestStats.set(url, (requestStats.get(url) || 0) + 1);
+
+        if (totalRequests % 1000 === 1) {
+            const sample = Array.from(requestStats.entries()).slice(0, 5);
+            console.log('[hserve] request stats', { total: totalRequests, sample });
+        }
+
+        await next();
+    });
+
     app.use(async (ctx, next) => {
         const start = Date.now();
         await next();
