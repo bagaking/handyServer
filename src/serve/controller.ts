@@ -1,8 +1,10 @@
 import {JsonController, Get, UseBefore, UseAfter} from "routing-controllers";
 import { turtle, genLogger, Logger } from "@khgame/turtle";
+import {Service} from "typedi";
 
 
 @JsonController("/")
+@Service()
 export class Controller {
 
     public log: Logger = genLogger("api:app");
