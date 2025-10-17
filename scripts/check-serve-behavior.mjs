@@ -1,16 +1,24 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import Path from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 
 const tempRoot = mkdtempSync(Path.join(tmpdir(), 'hserve-behavior-'));
 const fileTarget = Path.join(tempRoot, 'not-a-dir.txt');
+const staticDir = Path.join(tempRoot, 'static');
 const staticRoute = 'assets';
 writeFileSync(fileTarget, 'plain file target');
+mkdirSync(staticDir);
+writeFileSync(Path.join(staticDir, 'ok.txt'), 'ok-static');
 
 try {
+  await withServer({ dir: staticDir, api: staticRoute }, async (baseUrl) => {
+    await assertHealth(baseUrl, 'valid static directory should keep the API route available');
+    await assertServed(urlFor(baseUrl, staticRoute, 'ok.txt'), 'ok-static');
+  });
+
   await withServer({ dir: Path.join(tempRoot, 'missing-dir'), api: staticRoute }, async (baseUrl) => {
     await assertHealth(baseUrl, '--dir pointing at a missing directory should keep the API route available');
     await assertNotFound(urlFor(baseUrl, staticRoute, 'not-found.txt'));
@@ -103,6 +111,14 @@ async function assertNotFound(url) {
   await response.text();
 
   assert.equal(response.status, 404, `static request should not be served: ${url}`);
+}
+
+async function assertServed(url, expectedBody) {
+  const response = await fetchWithTimeout(url);
+  const body = await response.text();
+
+  assert.equal(response.status, 200, `static request should be served: ${url}`);
+  assert.equal(body, expectedBody, `static response body should match fixture: ${url}`);
 }
 
 async function fetchWithTimeout(url) {
